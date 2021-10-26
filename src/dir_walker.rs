@@ -9,7 +9,7 @@ pub struct DirWalker {
 }
 
 impl DirWalker {
-  pub fn new(baseDir: PathBuf) -> Result<DirWalker, io::Error> {
+  pub fn new(baseDir: &PathBuf) -> Result<DirWalker, io::Error> {
     let iter = fs::read_dir(baseDir)?;
     let vec = Vec::new();
 
