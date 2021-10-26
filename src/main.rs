@@ -12,18 +12,21 @@ struct Options {
     dry_run: bool,
 }
 
-fn try_read_bom(path: &PathBuf, buffer: &mut [u8]) -> std::io::Result<bool> {
+fn try_read_bom(path: &PathBuf, buffer: &mut [u8]) -> std::io::Result<()>
+{
     let _file = File::open(&path)?.read_exact(buffer)?;
-    Ok(true)
+    Ok(())
 }
 
 fn main()
 {
     let options = Options::from_args();
-    let current_dir = env::current_dir().expect("can't get current directory");
+    let current_dir = env::current_dir()
+        .expect("can't get current directory");
     println!("checking boms in {:?} ...", current_dir);
 
-    let files_list = dir_walker::DirWalker::new(current_dir).unwrap();
+    let files_list = dir_walker::DirWalker::new(current_dir)
+        .expect(format!("can't enumerate files in {:?}", current_dir));
 
     let mut buffer: [u8; 3] = [0;3];
     let bom: [u8; 3] = [0xef, 0xbb, 0xbf];
