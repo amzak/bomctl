@@ -18,17 +18,17 @@ struct Options {
 
 #[derive(Debug, PartialEq, Eq, Hash)]
 enum Encodings {
-    utf8,
-    uft16le,
-    uft16be
+    Utf8,
+    Uft16le,
+    Uft16be
 }
 
 lazy_static! {
     static ref BOMS_MAP: HashMap<Encodings, Vec<u8>> = {
         let mut m = HashMap::new();
-        m.insert(Encodings::utf8, vec![0xef, 0xbb, 0xbf]);
-        m.insert(Encodings::uft16be, vec![0xfe, 0xff]);
-        m.insert(Encodings::uft16le, vec![0xff, 0xfe]);
+        m.insert(Encodings::Utf8, vec![0xef, 0xbb, 0xbf]);
+        m.insert(Encodings::Uft16be, vec![0xfe, 0xff]);
+        m.insert(Encodings::Uft16le, vec![0xff, 0xfe]);
         m
     };
 }
