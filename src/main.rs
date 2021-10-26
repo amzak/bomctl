@@ -11,7 +11,9 @@ mod dir_walker;
 #[derive(Debug, StructOpt)]
 struct Options {
     #[structopt(short, long)]
-    dry_run: bool
+    dry_run: bool,
+    #[structopt(short, long)]
+    verbose: bool
 }
 
 #[derive(Debug, PartialEq, Eq, Hash)]
@@ -63,7 +65,7 @@ fn main() {
                 continue;
             }
             Ok(result) => {
-                if !result {
+                if !result && options.verbose {
                     println!("ignored {:?}", path);
                     continue;
                 }
