@@ -55,11 +55,21 @@ fn main() {
     let mut boms_counter = 0;
 
     for path in files_list {
-        if let Err(err) = try_read_bom(&path, &mut buffer) {
-            println!("ERROR {:?} {:?}", err.to_string(), path);
-            continue;
+        let bom_read_result = try_read_bom(&path, &mut buffer);
+
+        match bom_read_result {
+            Err(err) => {
+                println!("ERROR {:?} {:?}", err.to_string(), path);
+                continue;
+            }
+            Ok(result) => {
+                if !result {
+                    println!("ignored {:?}", path);
+                    continue;
+                }
+            }
         }
-        
+                
         for (encoding, bom_signature) in BOMS_MAP.iter() {
             let has_bom = buffer.iter().zip(bom_signature).all(|(first, second)| first == second);
 
