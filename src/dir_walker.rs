@@ -64,7 +64,7 @@ mod dirWalkerTests {
   fn internal() {
       let currentDir = env::current_dir().unwrap();
       println!("{:?}", currentDir);
-      let walkerResult = DirWalker::new(currentDir);
+      let walkerResult = DirWalker::new(&currentDir);
 
       if let Ok(walker) = walkerResult {
         for path in walker {
