@@ -1,5 +1,4 @@
-use std::env;
-use std::path::{Path, PathBuf};
+use std::path::{PathBuf};
 use std::fs::{self, DirEntry};
 use std::io;
 
@@ -9,8 +8,8 @@ pub struct DirWalker {
 }
 
 impl DirWalker {
-  pub fn new(baseDir: &PathBuf) -> Result<DirWalker, io::Error> {
-    let iter = fs::read_dir(baseDir)?;
+  pub fn new(base_dir: &PathBuf) -> Result<DirWalker, io::Error> {
+    let iter = fs::read_dir(base_dir)?;
     let vec = Vec::new();
 
     return Ok(DirWalker {
@@ -57,16 +56,16 @@ impl Iterator for DirWalker {
 }
 
 #[cfg(test)]
-mod dirWalkerTests {
+mod dir_walker_tests {
   use super::*;
 
   #[test]
   fn internal() {
-      let currentDir = env::current_dir().unwrap();
-      println!("{:?}", currentDir);
-      let walkerResult = DirWalker::new(&currentDir);
+      let current = std::env::current_dir().unwrap();
+      println!("{:?}", current);
+      let result = DirWalker::new(&current);
 
-      if let Ok(walker) = walkerResult {
+      if let Ok(walker) = result {
         for path in walker {
             println!("{:?}", path);
         }

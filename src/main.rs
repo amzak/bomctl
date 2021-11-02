@@ -2,7 +2,7 @@ use std::env;
 use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
-use std::io::{BufReader, BufWriter, Read, SeekFrom};
+use std::io::{Read, SeekFrom};
 use std::path::{PathBuf, Path};
 use structopt::StructOpt;
 use lazy_static::lazy_static;
@@ -134,7 +134,7 @@ fn _main(options: &Options) -> std::io::Result<Vec<FileResult>> {
             }
         }
                 
-        for (encoding, bom_signature) in BOMS_MAP.iter() {
+        for (_encoding, bom_signature) in BOMS_MAP.iter() {
             let has_bom = buffer.iter().zip(bom_signature).all(|(first, second)| first == second);
 
             if !has_bom {
