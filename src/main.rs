@@ -7,8 +7,7 @@ use std::path::{PathBuf, Path};
 use structopt::StructOpt;
 use lazy_static::lazy_static;
 use std::collections::HashMap;
-
-mod dir_walker;
+use walkdir::WalkDir;
 
 #[derive(Debug, StructOpt)]
 struct Options {
@@ -34,6 +33,8 @@ struct FileResult {
     has_bom: bool,
     error: Option<String>
 }
+
+const MAX_DEPTH: usize = 32;
 
 lazy_static! {
     static ref BOMS_MAP: HashMap<Encodings, Vec<u8>> = {
@@ -123,22 +124,30 @@ fn _main(options: &Options) -> std::io::Result<Vec<FileResult>> {
 
     let mut results = Vec::new();
 
-    let files_list = dir_walker::DirWalker::new(&current_dir, options.recursive)?;
-
     let mut buffer: [u8; 3] = [0;3];
 
-    for path in files_list {
+    let depth = if options.recursive { MAX_DEPTH } else { 1 };
+
+    for item in WalkDir::new(&current_dir).max_depth(depth) {
+        let dir_entry = item.unwrap();
+
+        if dir_entry.path().is_dir() {
+            continue;
+        }
+
+        let path = dir_entry.path();
+
         let bom_read_result = try_read_bom(&path, &mut buffer);
 
         match bom_read_result {
             Err(err) => {
                 let error = err.to_string();
-                results.push(FileResult{path: path.clone(), has_bom: false, error: Some(error)});
+                results.push(FileResult{path: path.to_path_buf(), has_bom: false, error: Some(error)});
                 continue;
             }
             Ok(result) => {
                 if !result && options.verbose {
-                    results.push(FileResult{path: path.clone(), has_bom: false, error: None});
+                    results.push(FileResult{path: path.to_path_buf(), has_bom: false, error: None});
                     continue;
                 }
             }
@@ -151,14 +160,14 @@ fn _main(options: &Options) -> std::io::Result<Vec<FileResult>> {
                 continue;
             }
 
-            results.push(FileResult{path: path.clone(), has_bom: true, error: None});
+            results.push(FileResult{path: path.to_path_buf(), has_bom: true, error: None});
 
             if options.dry_run {
                 continue;
             }
 
             if let Err(error) = trim_file_start(&path, bom_signature.len() as u64) {
-                results.push(FileResult{path: path.clone(), has_bom: true, error: Some(error.to_string())});
+                results.push(FileResult{path: path.to_path_buf(), has_bom: true, error: Some(error.to_string())});
             }
         }
     }
