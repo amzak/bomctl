@@ -16,6 +16,8 @@ struct Options {
     dry_run: bool,
     #[structopt(short, long)]
     verbose: bool,
+    #[structopt(short, long)]
+    recursive: bool,
     #[structopt(parse(from_os_str))]
     working_dir: Option<PathBuf>
 }
@@ -91,6 +93,13 @@ fn output_formatted(results: &[FileResult]) {
     }
 }
 
+fn extract_or_panic<'a, T>(target: &'a Option<T>) -> &'a T {
+    match target {
+        Some(x) => x,
+        None => panic!("value must not be none")
+    }
+}
+
 fn main() {
     let ref mut options = Options::from_args();
 
@@ -98,10 +107,11 @@ fn main() {
         options.working_dir = Some(env::current_dir().expect("can't get current directory"));
     }
 
-    println!("checking in {:?} ...", options.working_dir);
+    let recursive = if options.recursive { "recursive" } else { "" };
+    println!("checking in {:?} {:}...", extract_or_panic(&options.working_dir), recursive);
 
     match _main(options) {
-        Err(error) => panic!("error {:?} during files processing in {:?}", 
+        Err(error) => panic!("error {:} during files processing in {:?}", 
             error.to_string(), 
             options.working_dir),
         Ok(results) => output_formatted(&results)
@@ -109,11 +119,11 @@ fn main() {
 }
 
 fn _main(options: &Options) -> std::io::Result<Vec<FileResult>> {
-    let current_dir = options.working_dir.as_ref().unwrap();
+    let current_dir = extract_or_panic(&options.working_dir);
 
     let mut results = Vec::new();
 
-    let files_list = dir_walker::DirWalker::new(&current_dir)?;
+    let files_list = dir_walker::DirWalker::new(&current_dir, options.recursive)?;
 
     let mut buffer: [u8; 3] = [0;3];
 
@@ -202,6 +212,7 @@ mod bomctl_tests {
         let options = Options { 
             dry_run: false, 
             verbose: true,
+            recursive: false,
             working_dir: Some(PathBuf::from(TESTS_IN_DIR))
         };
         let results = _main(&options);

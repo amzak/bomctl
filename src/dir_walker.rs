@@ -4,17 +4,18 @@ use std::io;
 
 pub struct DirWalker {
   iter: fs::ReadDir,
+  recursive: bool,
   path_stack: Vec<DirEntry>
 }
 
 impl DirWalker {
-  pub fn new(base_dir: &PathBuf) -> Result<DirWalker, io::Error> {
+  pub fn new(base_dir: &PathBuf, recursive: bool) -> Result<DirWalker, io::Error> {
     let iter = fs::read_dir(base_dir)?;
-    let vec = Vec::new();
 
     return Ok(DirWalker {
-      path_stack: vec,
-      iter
+      path_stack: Vec::new(),
+      recursive: recursive,
+      iter: iter
     });
   }
 
@@ -34,7 +35,7 @@ impl Iterator for DirWalker {
       Some(x) => {
         let result = x.unwrap();
         let path_buf = result.path();
-        if path_buf.is_dir() {
+        if path_buf.is_dir() && self.recursive {
           self.path_stack.push(result);
           return self.next();
         }
@@ -63,7 +64,7 @@ mod dir_walker_tests {
   fn internal() {
       let current = std::env::current_dir().unwrap();
       println!("{:?}", current);
-      let result = DirWalker::new(&current);
+      let result = DirWalker::new(&current, true);
 
       if let Ok(walker) = result {
         for path in walker {
