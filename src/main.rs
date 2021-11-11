@@ -11,8 +11,9 @@ use walkdir::WalkDir;
 
 #[derive(Debug, StructOpt)]
 struct Options {
+    /// apply bom operation (default - remove  bom)
     #[structopt(short, long)]
-    dry_run: bool,
+    apply: bool,
     #[structopt(short, long)]
     verbose: bool,
     #[structopt(short, long)]
@@ -162,7 +163,7 @@ fn _main(options: &Options) -> std::io::Result<Vec<FileResult>> {
 
             results.push(FileResult{path: path.to_path_buf(), has_bom: true, error: None});
 
-            if options.dry_run {
+            if !options.apply {
                 continue;
             }
 
@@ -219,7 +220,7 @@ mod bomctl_tests {
         setup();
 
         let options = Options { 
-            dry_run: false, 
+            apply: true, 
             verbose: true,
             recursive: false,
             working_dir: Some(PathBuf::from(TESTS_IN_DIR))
